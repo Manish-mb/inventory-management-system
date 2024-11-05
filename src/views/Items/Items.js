@@ -24,14 +24,17 @@ import {
     CModalFooter
 } from '@coreui/react'
 import { DocsExample } from 'src/components';
-import { getallitems, SaveItems } from '../../Request/apiRequest';
+import { getallitems, SaveItems, EditItems } from '../../Request/apiRequest';
 
 function Items() {
 
     const [items, setItems] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Edit item modal visibility
+    const [editItemId, setEditItemId] = useState(null);
+
     const [newItem, setNewItem] = useState({
-        name: " ",
+        name: "",
         AttachmentID: null,
         sku: "",
         description: "",
@@ -42,20 +45,25 @@ function Items() {
         CurruntPrice: ""
     });
 
-
     const handleInputChange = (e) => {
         const { name, value, files } = e.target;
-        if (name === 'AttachmentID') {
-            setNewItem({ ...newItem, AttachmentID: files[0] });  // store file
-        } else {
-            setNewItem({ ...newItem, [name]: value });
-        }
-        
+        const updatedValue = name === 'AttachmentID' ? files[0] : value;
+        setNewItem((prevState) => ({ ...prevState, [name]: updatedValue }));
     };
 
+    // const handleInputChange = (e) => {
+    //     const { name, value, files } = e.target;
+    //     if (name === 'AttachmentID') {
+    //         setNewItem({ ...newItem, AttachmentID: files[0] });  // store file
+    //     } else {
+    //         setNewItem({ ...newItem, [name]: value });
+    //     }
+
+    // };
+
     const handleAddNewItem = async () => {
-       
-        if(!newItem.name || !newItem.quantity || !newItem.CurruntPrice || !newItem.sku){
+
+        if (!newItem.name || !newItem.quantity || !newItem.CurruntPrice || !newItem.sku) {
 
             alert("Please fill out required fields.");
             return;
@@ -63,11 +71,10 @@ function Items() {
 
         try {
             const response = await SaveItems(newItem);
-            if(response && response.success){
+            if (response && response.status === "success") {
                 alert("Item added successfully!");
 
                 setTimeout(() => {
-
                     setIsModalOpen(false); // Close the modal
                     setNewItem({
                         name: '',
@@ -83,14 +90,14 @@ function Items() {
                     GetallItemsList();
 
                 }, 2000)
-               
+
             } else {
                 alert("Failed to add item.");
             }
-        }  catch (error) {
+        } catch (error) {
             console.error("Error adding item:", error);
         }
-       
+
     };
 
 
@@ -113,6 +120,34 @@ function Items() {
         GetallItemsList();
     }, []);
 
+    const handleEditItems = (item) => {
+        setNewItem(item); // Pre-fill the form with item data
+        setEditItemId(item._id);
+        setIsEditModalOpen(true); // Open the edit modal
+    };
+    //    const  handleEditItems = () =>{
+
+    //    }
+
+    const handleUpdateItem = async () => {
+        try {
+            console.log("Updating Item:", newItem);
+            const response = await EditItems(editItemId, newItem);
+            if (response && response.status === "success") {
+
+                setTimeout(() => {
+                    alert("Item updated successfully!");
+                    setIsEditModalOpen(false);
+                    GetallItemsList();
+                }, 2000);
+
+            } else {
+                alert("Failed to update item.");
+            }
+        } catch (error) {
+            console.error("Error updating item:", error);
+        }
+    };
 
 
 
@@ -164,8 +199,7 @@ function Items() {
                                                 <CTableDataCell>{item.CurruntPrice}</CTableDataCell>
                                                 <CTableDataCell>{new Date(item.createdAt).toLocaleDateString()}</CTableDataCell>
                                                 <CTableDataCell>
-                                                    <CButton color='success' variant="outline" size='sm'>Edit</CButton>
-                                                    <CButton color='danger' variant="outline" size='sm'>Delete</CButton>
+                                                    <CButton color='success' variant="outline" size='sm' onClick={() => handleEditItems(item)}>Edit</CButton>
                                                 </CTableDataCell>
                                             </CTableRow>
                                         ))}
@@ -286,6 +320,105 @@ function Items() {
                     </CModalFooter>
                 </CModal>
 
+
+                {/* Modal for editing item */}
+                <CModal visible={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+                    <CModalHeader>
+                        <CModalTitle>Edit Item</CModalTitle>
+                    </CModalHeader>
+                    <CModalBody>
+                        <CForm>
+                            {/* Form fields for editing item */}
+                            <CFormLabel>Name</CFormLabel>
+                            <CFormInput type="text"
+                                name="name"
+                                value={newItem.name}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            <CCol md={6}>
+                                <CFormLabel>Item Img</CFormLabel>
+                                <CFormInput
+                                    type="file"
+                                    name="AttachmentID"
+                                    value={newItem.AttachmentID}
+                                    onChange={handleInputChange}
+                                />
+                            </CCol>
+
+                            <CCol md={12}>
+                                <CFormLabel>Description</CFormLabel>
+                                <CFormInput
+                                    type="text"
+                                    name="description"
+                                    value={newItem.description}
+                                    onChange={handleInputChange}
+                                />
+                            </CCol>
+                            <CCol md={12}>
+                                <CFormLabel>Quantity</CFormLabel>
+                                <CFormInput
+                                    type="number"
+                                    name="quantity"
+                                    value={newItem.quantity}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </CCol>
+                            <CCol md={12}>
+                                <CFormLabel>Product No.</CFormLabel>
+                                <CFormInput
+                                    type="text"
+                                    name="sku"
+                                    value={newItem.sku}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </CCol>
+                            <CCol md={12}>
+                                <CFormLabel>Cgst</CFormLabel>
+                                <CFormInput
+                                    type="number"
+                                    name="cgst"
+                                    value={newItem.cgst}
+                                    onChange={handleInputChange}
+                                />
+                            </CCol>
+                            <CCol md={12}>
+                                <CFormLabel>Sgst</CFormLabel>
+                                <CFormInput
+                                    type="number"
+                                    name="sgst"
+                                    value={newItem.sgst}
+                                    onChange={handleInputChange}
+                                />
+                            </CCol>
+                            <CCol md={12}>
+                                <CFormLabel>Igst</CFormLabel>
+                                <CFormInput
+                                    type="number"
+                                    name="igst"
+                                    value={newItem.igst}
+                                    onChange={handleInputChange}
+                                />
+                            </CCol>
+                            <CCol md={12}>
+                                <CFormLabel>Item Price</CFormLabel>
+                                <CFormInput
+                                    type="number"
+                                    name="CurruntPrice"
+                                    value={newItem.CurruntPrice}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </CCol>
+                        </CForm>
+                    </CModalBody>
+                    <CModalFooter>
+                        <CButton color="primary" onClick={handleUpdateItem}>Update Item</CButton>
+                        <CButton color="secondary" onClick={() => setIsEditModalOpen(false)}>Cancel</CButton>
+                    </CModalFooter>
+                </CModal>
             </div>
         </>
     )

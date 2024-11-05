@@ -24,6 +24,16 @@ export const SaveItems = async (itemData) => {
     }
 }
 
+export const EditItems = async (id, itemData) => {
+    try {
+        const res = await axios.post(`${MAIN_URL}/edititem`, { _id: id, ...itemData });
+        return res?.data;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+
 export const SubmitOrder = async () => {
     try {
         const res = await axios.post(`${MAIN_URL}/saveorder`);
