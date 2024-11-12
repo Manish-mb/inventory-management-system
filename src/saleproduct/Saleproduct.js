@@ -27,8 +27,19 @@ import { getallitems, SubmitOrder } from '../Request/apiRequest'
 
 function Saleproduct() {
 
+  // const [itemlist, setItemList] = useState([]);
+  // const [selectedItems, setSelectedItems] = useState([]);
+  // const [quantities, setQuantities] = useState({});
+  // const [customerName, setCustomerName] = useState('');
+  // const [totalAmount, setTotalAmount] = useState('');
+  // const [customerGST, setCustomerGST] = useState('');
+  // const [cgst, setCgst] = useState('');
+  // const [sgst, setSgst] = useState('');
+  // const [igst, setIgst] = useState('');
+
   const [itemlist, setItemList] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedItemId, setSelectedItemId] = useState('');
+  const [multiitems, setMultiItems] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [customerName, setCustomerName] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
@@ -36,7 +47,59 @@ function Saleproduct() {
   const [cgst, setCgst] = useState('');
   const [sgst, setSgst] = useState('');
   const [igst, setIgst] = useState('');
-  
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredItems = itemlist.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAddItem = () => {
+    if (selectedItemId) {
+      const selectedItem = itemlist.find(item => item._id === selectedItemId);
+      if (selectedItem) {
+        setMultiItems(prevRecipients => [...prevRecipients, selectedItem]);
+        setSelectedItemId('');
+      }
+    }
+  };
+
+  const handleQuantityChange = (id, value) => {
+    setQuantities(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const itemsPayload = multiitems.map(item => ({
+      item: item._id,
+      quantity: quantities[item._id] || 1,
+      price: item.CurruntPrice || 0,
+      cgst: parseFloat(cgst),
+      sgst: parseFloat(sgst),
+      igst: parseFloat(igst)
+    }));
+
+    const payload = {
+      items: itemsPayload,
+      customerName,
+      customerGST,
+      totalAmount: parseFloat(totalAmount),
+      cgst: parseFloat(cgst),
+      sgst: parseFloat(sgst),
+      igst: parseFloat(igst)
+    };
+
+    try {
+      const response = await SubmitOrder(payload);
+      if (response.success) {
+        alert("Order submitted successfully!");
+      } else {
+        alert("Failed to submit order.");
+      }
+    } catch (error) {
+      console.error("Error submitting order:", error);
+    }
+  };
+
 
   const GetallItemsList = async () => {
     try {
@@ -61,82 +124,140 @@ function Saleproduct() {
   return (
     <CRow>
       <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>
-            <strong>Selling Product Form</strong>
-            {/* <small>Gutters</small> */}
-          </CCardHeader>
-          <CCardBody>
-            {/* <p className="text-body-secondary small">
-              By adding <a href="https://coreui.io/docs/layout/gutters/">gutter modifier classes</a>
-              , you can have control over the gutter width in as well the inline as block direction.
-            </p> */}
+        <div className="row">
+          <div className="col-sm-4">
+            <div className="input-block">
+              <label className="col-form-label">Search Item</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search item"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
 
-            <p className="text-body-secondary small">
-              Type proper details
-            </p>
-
-            <CForm className="row g-3">
-              <CCol md={6}>
-                <CFormLabel htmlFor="inputState">Item List</CFormLabel>
-                <CFormSelect >
-                  <option value="">Choose...</option>
-                  {itemlist.map((item) => ( 
-                    <option key={item._id} value={item._id}> 
-                      {item.name}
-                      { console.log(item.name)}
-                    </option>
+          <div className="col-sm-4">
+            <div className="input-block">
+              <label className="col-form-label">Select Item</label>
+              <select
+                className="form-select"
+                value={selectedItemId}
+                onChange={(e) => setSelectedItemId(e.target.value)}
+              >
+                <option value="">Select item</option>
+                {filteredItems.map((item) => (
+                  <option key={item._id} value={item._id}>
+                    {item.name}
+                  </option>
                 ))}
-                </CFormSelect>
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="inputPassword4">CustomerName</CFormLabel>
-                <CFormInput name="" type="text" id="inputPassword4" />
-              </CCol>
-              <CCol xs={6}>
-                <CFormLabel htmlFor="inputAddress">Quantity </CFormLabel>
-                <CFormInput name="" type='number' placeholder="" />
-              </CCol>
-              <CCol xs={6}>
-                <CFormLabel htmlFor="inputAddress">Total Amout</CFormLabel>
-                <CFormInput name="" type='number' placeholder="" />
-              </CCol>
-              <CCol xs={6}>
-                <CFormLabel htmlFor="inputAddress2">CustomerGST</CFormLabel>
-                <CFormInput name="" id="inputAddress2" placeholder="" />
-              </CCol>
-              <CCol md={4}>
-                <CFormLabel htmlFor="inputCity">Cgst</CFormLabel>
-                <CFormInput name="" />
-              </CCol>
-              <CCol md={4}>
-                <CFormLabel htmlFor="inputCity">Sgst</CFormLabel>
-                <CFormInput name="" />
-              </CCol>
-              <CCol md={4}>
-                <CFormLabel htmlFor="inputCity">Igst</CFormLabel>
-                <CFormInput name="" />
-              </CCol>
-              {/* <CCol md={4}>
-                  <CFormLabel htmlFor="inputState">State</CFormLabel>
-                  <CFormSelect id="inputState">
-                    <option>Choose...</option>
-                    <option>...</option>
-                  </CFormSelect>
-                </CCol> */}
+              </select>
+            </div>
+          </div>
 
-              <CCol xs={12}>
-                <CButton color="primary" type="submit">
-                  Submit
-                </CButton>
-              </CCol>
-            </CForm>
-          </CCardBody>
-        </CCard>
+          <div className="col-sm-4 mt-4">
+            {""}
+            <button className="btn btn-primary form-control" onClick={handleAddItem}>
+              Add Item
+            </button>
+          </div>
+
+          <ul className="list-group my-3 mx-2">
+            {multiitems.map((item, index) => (
+              <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <span>{item.name}</span>
+                  <input
+                    type="number"
+                    className="form-control mt-2"
+                    placeholder="Enter quantity"
+                    value={quantities[item._id] || 1}
+                    onChange={(e) => handleQuantityChange(item._id, e.target.value)}
+                  />
+                </div>
+                <button
+                  className="btn btn-secondary rounded-circle"
+                  type="button"
+                  onClick={() =>
+                    setMultiItems(multiitems.filter((_, idx) => idx !== index))
+                  }
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="col-md-6">
+            <label>Customer Name</label>
+            <input
+              type="text"
+              className="form-control"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label>Customer GST</label>
+            <input
+              type="text"
+              className="form-control"
+              value={customerGST}
+              onChange={(e) => setCustomerGST(e.target.value)}
+            />
+          </div>
+
+          <div className="col-md-4">
+            <label>Total Amount</label>
+            <input
+              type="number"
+              className="form-control"
+              value={totalAmount}
+              onChange={(e) => setTotalAmount(e.target.value)}
+            />
+          </div>
+          <div className="col-md-4">
+            <label>CGST</label>
+            <input
+              type="number"
+              className="form-control"
+              value={cgst}
+              onChange={(e) => setCgst(e.target.value)}
+            />
+          </div>
+          <div className="col-md-4">
+            <label>SGST</label>
+            <input
+              type="number"
+              className="form-control"
+              value={sgst}
+              onChange={(e) => setSgst(e.target.value)}
+            />
+          </div>
+          <div className="col-md-4">
+            <label>IGST</label>
+            <input
+              type="number"
+              className="form-control"
+              value={igst}
+              onChange={(e) => setIgst(e.target.value)}
+            />
+          </div>
+
+          <div className="col-12">
+            <button className="btn btn-primary mt-3"
+              onClick={handleSubmit}
+            >
+              Submit Order
+            </button>
+          </div>
+        </div>
       </CCol>
 
       <CCol xs={12}>
-        <CCard className="mb-4">
+        <CCard className="mt-5">
           <CCardHeader>
             <strong>Selling Item Table</strong>
             {/* <small>Basic example</small> */}
