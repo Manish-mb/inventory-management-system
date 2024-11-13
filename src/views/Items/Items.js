@@ -165,7 +165,7 @@ function Items() {
                                     variant="outline"
 
                                     onClick={() => setIsModalOpen(true)} // Open modal on click
-                                    style={{ justifyItems: "left" }}
+                                    style={{ float: "right" }}
                                 >
                                     Add New Item
                                 </CButton>
@@ -182,7 +182,7 @@ function Items() {
                                             <CTableHeaderCell scope="col">Item Img</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Product Name</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Product Description</CTableHeaderCell>
-                                            <CTableHeaderCell scope="col">Total Quantity</CTableHeaderCell>
+                                            <CTableHeaderCell scope="col" style={{ backgroundColor: "#B0E0E6", textAlign: "center"}}>Total Quantity</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Product Price</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Added Date</CTableHeaderCell>
                                             <CTableHeaderCell scope="col">Action</CTableHeaderCell>
@@ -195,9 +195,9 @@ function Items() {
                                                 <CTableDataCell>Items Img</CTableDataCell>
                                                 <CTableDataCell>{item.name}</CTableDataCell>
                                                 <CTableDataCell>{item.description}</CTableDataCell>
-                                                <CTableDataCell >{item.quantity}</CTableDataCell>
+                                                <CTableDataCell style={{ backgroundColor: "#B0E0E6", textAlign: "center"}}>{item.quantity}</CTableDataCell>
                                                 <CTableDataCell>{item.CurruntPrice}</CTableDataCell>
-                                                <CTableDataCell>{new Date(item.createdAt).toLocaleDateString()}</CTableDataCell>
+                                                <CTableDataCell>{new Date(item.createdAt).toLocaleDateString('en-GB', { year: '2-digit', month: '2-digit', day: '2-digit' })}</CTableDataCell>
                                                 <CTableDataCell>
                                                     <CButton color='success' variant="outline" size='sm' onClick={() => handleEditItems(item)}>Edit</CButton>
                                                 </CTableDataCell>

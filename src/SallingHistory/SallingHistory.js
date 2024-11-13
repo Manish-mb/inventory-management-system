@@ -44,6 +44,8 @@ function SallingHistory() {
             const res = await GetAllorders();
             if (res && res.result) {
                 setOrderList(res.result); // Set items to the 'result' array from the response
+                const sortedOrders = res.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setOrderList(sortedOrders);
 
                 console.log(res.result, "orderrrrrrrrrrrrrrrrr")
             } else {
@@ -125,8 +127,8 @@ function SallingHistory() {
                                     <CTableRow>
                                         {/* <CTableHeaderCell scope="col">Item Img</CTableHeaderCell> */}
                                         <CTableHeaderCell scope="col">Product Name</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Sale Quantity</CTableHeaderCell>
-                                        <CTableHeaderCell scope="col">Salling Price</CTableHeaderCell>
+                                        <CTableHeaderCell scope="col" style={{ textAlign: "center"}}>Sale Quantity</CTableHeaderCell>
+                                        <CTableHeaderCell scope="col" style={{ textAlign: "center"}}>Salling Price</CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Salling Date</CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Order Details</CTableHeaderCell>
                                         <CTableHeaderCell scope="col">Order Invoice</CTableHeaderCell>
@@ -139,9 +141,9 @@ function SallingHistory() {
                                             <CTableRow key={`${order._id}-${index}`}>
                                                 {/* <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell> */}
                                                 <CTableDataCell>{item.item.name}</CTableDataCell>
-                                                <CTableDataCell>{item.quantity}</CTableDataCell>
-                                                <CTableDataCell>{order.totalAmount}</CTableDataCell>
-                                                <CTableDataCell>{new Date(order.createdAt).toLocaleDateString()}</CTableDataCell>
+                                                <CTableDataCell style={{ textAlign: "center"}}>{item.quantity}</CTableDataCell>
+                                                <CTableDataCell style={{ textAlign: "center"}}>{order.totalAmount}</CTableDataCell>
+                                                <CTableDataCell>{new Date(order.createdAt).toLocaleDateString('en-GB', { year: '2-digit', month: '2-digit', day: '2-digit' })}</CTableDataCell>
                                                 <CTableDataCell>
                                                     <CButton color='success' variant="outline" size='sm' onClick={() => GetOrderDetails(order._id)} >View Details</CButton>
                                                 </CTableDataCell>

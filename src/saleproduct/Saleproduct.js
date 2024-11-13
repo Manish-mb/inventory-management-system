@@ -18,14 +18,15 @@ import {
   CTableRow,
   CTableHeaderCell,
   CTableBody,
-
-  CModal,
+  CTableDataCell,
 
 } from '@coreui/react'
 import { DocsExample } from 'src/components'
-import { getallitems, SubmitOrder } from '../Request/apiRequest'
+import { getallitems, SubmitOrder, GetAllorders, GetOrderInvoice, getOrderDetailsById } from '../Request/apiRequest'
 
 function Saleproduct() {
+
+  const [orderlist, setOrderList] = useState([]);
 
   const [itemlist, setItemList] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState('');
@@ -137,8 +138,55 @@ function Saleproduct() {
 
   useEffect(() => {
     GetallItemsList();
+    GetAllOrderHistory();
   }, []);
 
+  const GetAllOrderHistory = async () => {
+    try {
+      const res = await GetAllorders();
+      if (res && res.result) {
+        setOrderList(res.result); // Set items to the 'result' array from the response
+        const sortedOrders = res.result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setOrderList(sortedOrders.slice(0, 5));
+        
+        console.log(res.result, "orderrrrrrrrrrrrrrrrr")
+      } else {
+        setOrderList([]); // Set items to an empty array if result is undefined
+      }
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    }
+  };
+
+
+  const downloadInvoice = async (orderId) => {
+    try {
+      const res = await GetOrderInvoice(orderId);
+      if (res && res.result && res.result.invoice) {
+        // Decode the base64 data and create a downloadable link
+        const base64Data = res.result.invoice;
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+        // Create a link to download the file
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `invoice_${orderId}.pdf`;
+        link.click();
+
+        console.log("Invoice downloaded successfully");
+      } else {
+        console.error("Failed to download invoice: Invalid response format");
+      }
+    } catch (error) {
+      console.error("Error downloading invoice:", error);
+    }
+  };
 
   return (
     <CRow>
@@ -157,7 +205,7 @@ function Saleproduct() {
             </div>
           </div>
 
-          <div className="col-sm-4">
+          <div className="col-sm-5">
             <div className="input-block">
               <label className="col-form-label">Select Item</label>
               <select
@@ -175,9 +223,9 @@ function Saleproduct() {
             </div>
           </div>
 
-          <div className="col-sm-4 mt-4">
+          <div className="col-sm-3 mt-4">
             {""}
-            <button className="btn btn-primary form-control" onClick={handleAddItem}>
+            <button className="btn btn-outline-primary  form-control" onClick={handleAddItem}>
               Add Item
             </button>
           </div>
@@ -266,7 +314,7 @@ function Saleproduct() {
           </div>
 
           <div className="col-12">
-            <button className="btn btn-primary mt-3" type="button"
+            <button className="btn btn-outline-primary mt-3" type="button" style={{ width: "250px", float: "right" }}
               onClick={handleSubmit}
             >
               Submit Order
@@ -299,18 +347,23 @@ function Saleproduct() {
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {/* {items.map((item, index) => (
-                                            <CTableRow key={item._id || index}>
-                                                <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                                                <CTableDataCell>{item.name}</CTableDataCell>
-                                                <CTableDataCell>{item.description}</CTableDataCell>
-                                                <CTableDataCell>{item.quantity}</CTableDataCell>
-                                                <CTableDataCell>
-                                                    <CButton>Edit</CButton>
-                                                    <CButton>Delete</CButton>
-                                                </CTableDataCell>
-                                            </CTableRow>
-                                        ))} */}
+                {orderlist.map((order) => (
+                  order.items.map((item, index) => (
+
+                    <CTableRow key={`${order._id}-${index}`}>
+                      {/* <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell> */}
+                      <CTableDataCell>{item.item.name}</CTableDataCell>
+                      <CTableDataCell>{item.quantity}</CTableDataCell>
+                      <CTableDataCell>{order.totalAmount}</CTableDataCell>
+                      <CTableDataCell>{new Date(order.createdAt).toLocaleDateString()}</CTableDataCell>
+                      <CTableDataCell>
+                        <CButton color='primary' variant="outline" size='sm' onClick={() => downloadInvoice(order._id)} >Download Invoice</CButton>
+                      </CTableDataCell>
+
+                    </CTableRow>
+                  ))
+
+                ))}
 
               </CTableBody>
             </CTable>

@@ -32,14 +32,14 @@ const AppHeaderDropdown = () => {
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
-        <CDropdownItem href="#">
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilBell} className="me-2" />
           Updates
           <CBadge color="info" className="ms-2">
             42
           </CBadge>
-        </CDropdownItem>
-        <CDropdownItem href="#">
+        </CDropdownItem> */}
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilEnvelopeOpen} className="me-2" />
           Messages
           <CBadge color="success" className="ms-2">
@@ -82,11 +82,11 @@ const AppHeaderDropdown = () => {
           <CBadge color="primary" className="ms-2">
             42
           </CBadge>
-        </CDropdownItem>
+        </CDropdownItem> */}
         <CDropdownDivider />
         <CDropdownItem href="#">
           <CIcon icon={cilLockLocked} className="me-2" />
-          Lock Account
+          Log Out
         </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>
