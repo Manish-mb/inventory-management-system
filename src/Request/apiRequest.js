@@ -34,16 +34,31 @@ export const EditItems = async (id, itemData) => {
     }
 }
 
-export const SubmitOrder = async () => {
-    try {
-        const res = await axios.post(`${MAIN_URL}/saveorder`);
-        return res?.data;
-    }
-    catch (error) {
-        console.log(error);
-    }
-}
+// export const SubmitOrder = async () => {
+//     try {
+//         const res = await axios.post("http://localhost:8000/api/saveorder");
+//         return res?.data;
+//     }
+//     catch (error) {
+//         console.log(error);
+//     }
+// }
 
+export const SubmitOrder = async (payload) => {
+    try {
+      const res = await axios.post(`${MAIN_URL}/saveorder`, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return res?.data;
+    } catch (error) {
+      console.error("Frontend API error:", error.response?.data || error.message);
+      return { status: 'failed', message: 'Something Went Wrong', error };
+    }
+  };
+
+  
 export const GetAllorders = async () => {
     try {
         const res = await axios.get(`${MAIN_URL}/getAllorders`);

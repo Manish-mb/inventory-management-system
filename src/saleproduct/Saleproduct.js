@@ -27,26 +27,16 @@ import { getallitems, SubmitOrder } from '../Request/apiRequest'
 
 function Saleproduct() {
 
-  // const [itemlist, setItemList] = useState([]);
-  // const [selectedItems, setSelectedItems] = useState([]);
-  // const [quantities, setQuantities] = useState({});
-  // const [customerName, setCustomerName] = useState('');
-  // const [totalAmount, setTotalAmount] = useState('');
-  // const [customerGST, setCustomerGST] = useState('');
-  // const [cgst, setCgst] = useState('');
-  // const [sgst, setSgst] = useState('');
-  // const [igst, setIgst] = useState('');
-
   const [itemlist, setItemList] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState('');
   const [multiitems, setMultiItems] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [customerName, setCustomerName] = useState('');
-  const [totalAmount, setTotalAmount] = useState('');
+  const [totalAmount, setTotalAmount] = useState(0);
   const [customerGST, setCustomerGST] = useState('');
-  const [cgst, setCgst] = useState('');
-  const [sgst, setSgst] = useState('');
-  const [igst, setIgst] = useState('');
+  const [cgst, setCgst] = useState(0);
+  const [sgst, setSgst] = useState(0);
+  const [igst, setIgst] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredItems = itemlist.filter(item =>
@@ -66,6 +56,23 @@ function Saleproduct() {
   const handleQuantityChange = (id, value) => {
     setQuantities(prev => ({ ...prev, [id]: value }));
   };
+
+  const calculateTotalAmount = () => {
+    let subtotal = 0;
+
+    multiitems.forEach(item => {
+      const quantity = quantities[item._id] || 1;
+      const itemTotal = item.CurruntPrice * quantity;
+      subtotal += itemTotal;
+    });
+
+    const totalGST = (subtotal * (parseFloat(cgst) + parseFloat(sgst) + parseFloat(igst))) / 100;
+    setTotalAmount(subtotal + totalGST);
+  };
+
+  useEffect(() => {
+    calculateTotalAmount();
+  }, [multiitems, quantities, cgst, sgst, igst]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,14 +97,26 @@ function Saleproduct() {
 
     try {
       const response = await SubmitOrder(payload);
-      if (response.success) {
+      if (response && response.status === "success") {
         alert("Order submitted successfully!");
+        clearForm();
       } else {
         alert("Failed to submit order.");
       }
     } catch (error) {
       console.error("Error submitting order:", error);
     }
+  };
+
+  const clearForm = () => {
+    setMultiItems([]);
+    setQuantities({});
+    setCustomerName('');
+    setCustomerGST('');
+    setTotalAmount(0);
+    setCgst(0);
+    setSgst(0);
+    setIgst(0);
   };
 
 
@@ -189,7 +208,7 @@ function Saleproduct() {
             ))}
           </ul>
 
-          <div className="col-md-6">
+          <div className="col-md-4">
             <label>Customer Name</label>
             <input
               type="text"
@@ -199,8 +218,8 @@ function Saleproduct() {
             />
           </div>
 
-          <div className="col-md-6">
-            <label>Customer GST</label>
+          <div className="col-md-4">
+            <label>Customer GST (%)</label>
             <input
               type="text"
               className="form-control"
@@ -210,16 +229,7 @@ function Saleproduct() {
           </div>
 
           <div className="col-md-4">
-            <label>Total Amount</label>
-            <input
-              type="number"
-              className="form-control"
-              value={totalAmount}
-              onChange={(e) => setTotalAmount(e.target.value)}
-            />
-          </div>
-          <div className="col-md-4">
-            <label>CGST</label>
+            <label>CGST  (%)</label>
             <input
               type="number"
               className="form-control"
@@ -228,7 +238,7 @@ function Saleproduct() {
             />
           </div>
           <div className="col-md-4">
-            <label>SGST</label>
+            <label>SGST (%)</label>
             <input
               type="number"
               className="form-control"
@@ -237,7 +247,7 @@ function Saleproduct() {
             />
           </div>
           <div className="col-md-4">
-            <label>IGST</label>
+            <label>IGST (%)</label>
             <input
               type="number"
               className="form-control"
@@ -245,9 +255,18 @@ function Saleproduct() {
               onChange={(e) => setIgst(e.target.value)}
             />
           </div>
+          <div className="col-md-4">
+            <label>Total Amount</label>
+            <input
+              type="number"
+              className="form-control"
+              value={totalAmount.toFixed(2)}
+              onChange={(e) => setTotalAmount(e.target.value)}
+            />
+          </div>
 
           <div className="col-12">
-            <button className="btn btn-primary mt-3"
+            <button className="btn btn-primary mt-3" type="button"
               onClick={handleSubmit}
             >
               Submit Order
