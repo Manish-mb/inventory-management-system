@@ -55,7 +55,13 @@ function Saleproduct() {
   };
 
   const handleQuantityChange = (id, value) => {
-    setQuantities(prev => ({ ...prev, [id]: value }));
+    const parsedValue = value === '' ? '' : Math.max(1, Number(value));
+
+    setQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [id]: parsedValue,
+    }));
+    // setQuantities(prev => ({ ...prev, [id]: value }));
   };
 
   const calculateTotalAmount = () => {
@@ -239,8 +245,14 @@ function Saleproduct() {
                     type="number"
                     className="form-control mt-2"
                     placeholder="Enter quantity"
-                    value={quantities[item._id] || 1}
+                    value={quantities[item._id] || ''}
                     onChange={(e) => handleQuantityChange(item._id, e.target.value)}
+                    onBlur={(e) => {
+                      // Reset to 1 if the input is cleared
+                      if (!e.target.value) {
+                        handleQuantityChange(item._id, 1);
+                      }
+                    }}
                   />
                 </div>
                 <button
